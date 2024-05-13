@@ -24,11 +24,19 @@ public extension View {
     ///   - transform: 对视图的转换处理
     /// - Returns: 处理后的方法
     @ViewBuilder
-    func `if`<V>(_ condition: Bool, transform: (Self) -> V) -> some View where V: View {
+    func `if`(_ condition: Bool, @ViewBuilder transform: (Self) -> some View) -> some View {
         if condition { transform(self) }
         else { self }
     }
     
+    @ViewBuilder
+    func `if`(_ condition: Bool, @ViewBuilder transForm: (Self) -> some View, @ViewBuilder else elseTransform: (Self) -> some View) -> some View {
+        if condition {
+            transForm(self)
+        } else {
+            elseTransform(self)
+        }
+    }
     
     /// 用于在数据存在的情况下对视图做修饰扩展
     /// 比如我们有一个圆角的数据 radius，我需要在这个值存在的时候对text添加一个圆角，否则就不管
@@ -47,11 +55,13 @@ public extension View {
     ///   - transform: 转换方法
     /// - Returns: 处理后的视图
     @ViewBuilder
-    func `if`<V, D>(_ data: D?, default defaultValue: D? = nil, transform: (Self, D) -> V) -> some View where V: View  {
-        if let data = data ?? defaultValue { transform(self, data )}
-        else { self }
+    func `if`<D>(_ data: D?, default defaultValue: D? = nil, @ViewBuilder transform: (Self, D) -> some View) -> some View  {
+        if let data = data ?? defaultValue {
+            transform(self, data )
+        } else {
+            self
+        }
     }
-    
     
     /// 在条件满足的时候对view应用modifier
     /// - Parameters:
@@ -66,7 +76,6 @@ public extension View {
             self
         }
     }
-
     
     /// 根据输入条件的true/false来决定使用对应的modifier
     /// - Parameters:
@@ -83,8 +92,6 @@ public extension View {
         }
     }
 }
-
-
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 @available(tvOS, unavailable)

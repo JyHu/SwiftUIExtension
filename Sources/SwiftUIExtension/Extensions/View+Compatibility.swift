@@ -43,3 +43,24 @@ public extension View {
         }
     }
 }
+
+@available(macCatalyst 14.0, macOS 11.0, *)
+public extension View {
+    @ViewBuilder
+    func adp_navigationSubtitle(_ subTitle: Text) -> some View {
+        #if os(macOS)
+        self.navigationSubtitle(subTitle)
+        #else
+        self
+        #endif
+    }
+    
+    @ViewBuilder
+    func adp_navigationSubtitle(_ subTitle: String) -> some View {
+        #if os(macOS)
+        self.navigationSubtitle(subTitle)
+        #else
+        self
+        #endif
+    }
+}

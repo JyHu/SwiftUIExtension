@@ -10,7 +10,7 @@ import SwiftUI
 /// 带有自定义返回按钮的视图
 struct BackableView<T>: View where T: View {
     #if os(iOS)
-    @Environment(\.dismiss) var dismissAction
+    @Environment(\.presentationMode) var presentationMode
     #endif
     
     let contentMaker: () -> T
@@ -21,7 +21,7 @@ struct BackableView<T>: View where T: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dismissAction()
+                        presentationMode.wrappedValue.dismiss()
                     } label: {
                         Label("Back", systemImage: "chevron.left")
                     }
