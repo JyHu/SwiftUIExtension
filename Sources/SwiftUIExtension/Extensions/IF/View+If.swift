@@ -144,3 +144,12 @@ public extension View {
         }
     }
 }
+
+public extension View {
+    @ViewBuilder
+    func labelsHidden(if condition: Bool) -> some View {
+        self.if(condition) {
+            $0.labelsHidden()
+        }
+    }
+}

@@ -39,3 +39,11 @@ public extension View {
         return overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(content, lineWidth: width))
     }
 }
+
+public extension View {
+    /// 调整支持多行展示
+    func multilinesStyle() -> some View {
+        self.lineLimit(nil)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}

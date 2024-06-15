@@ -45,3 +45,84 @@ struct PlatformPopableView<T>: View where T: View {
         }
     }
 }
+//
+//public struct PresentedView<C, T>: View where C: View, T: View {
+//    /// 弹出方式
+//    public enum PresentMode {
+//        case sheet
+//        case popover(_ size: CGSize)
+//    }
+//    
+//    public let content: () -> C
+//    public let target: () -> T
+//    public let isNavigatable: Bool
+//    public let mode: PresentMode
+//    
+//    @State private var isPresented: Bool = false
+//    
+//    @Environment(\.presentationMode) private var presentationMode
+//    
+//    public init(content: @escaping () -> C, target: @escaping () -> T, isNavigatable: Bool = true, mode: PresentMode = .sheet) {
+//        self.content = content
+//        self.target = target
+//        self.isNavigatable = isNavigatable
+//        self.mode = mode
+//    }
+//    
+//    public var body: some View {
+//        let sourceView = Group {
+//            if #available(iOS 15.0, *) {
+//                content()
+//                    .overlay {
+//                        Button(" ") {
+//                            isPresented = true
+//                        }
+//                    }
+//            } else {
+//                Button {
+//                    isPresented
+//                } label: {
+//                    content()
+//                }
+//            }
+//        }
+//        
+//        let targetView = Group {
+//            if isNavigatable {
+//                let tmpView = target()
+//                    .toolbar {
+//                        ToolbarItem(placement: .topBarLeading) {
+//                            Button {
+//                                presentationMode.wrappedValue.dismiss()
+//                            } label: {
+//                                Image(systemName: "")
+//                            }
+//                        }
+//                    }
+//                
+//                if #available(iOS 16.0, *) {
+//                    NavigationStack {
+//                        tmpView
+//                    }
+//                } else {
+//                    NavigationView {
+//                        tmpView
+//                    }
+//                }
+//            } else {
+//                target()
+//            }
+//        }
+//        
+//        switch mode {
+//        case .sheet:
+//            sourceView.sheet(isPresented: $isPresented) {
+//                targetView
+//            }
+//        case .popover(let _):
+//            sourceView.popover(isPresented: $isPresented) {
+//                targetView
+//            }
+//        }
+//    }
+//}

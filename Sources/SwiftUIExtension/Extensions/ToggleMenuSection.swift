@@ -63,16 +63,6 @@ import SwiftUI
 ///
 ///                 Divider()
 ///
-///                 Section {
-///                     let weathers = Weather.allCases
-///                     ForEach(0..<weathers.count, id: \.self) { ind in
-///                         ToggleMenuItem(title: weathers[ind].label, systemImage: weathers[ind].systemImage, bind: $weather, value: weathers[ind])
-///                     }
-///                 } header: {
-///                     Text("Chooice Weather")
-///                 }
-///
-///                 Divider()
 ///
 ///                 Toggle("Are you ready", isOn: $isReady)
 ///
@@ -95,80 +85,24 @@ import SwiftUI
 ///
 ///
 
-public struct ToggleMenuItem<T>: View where T: Equatable {
-    
-    @State private var isOn: Bool
-    @Binding private var bindValue: T
-    private let value: T
-    private let label: AnyView
-    
-    public init(title: String, systemImage: String? = nil, bind bindValue: Binding<T>, value: T) {
-        _bindValue = bindValue
-        _isOn = State(wrappedValue: bindValue.wrappedValue == value)
-        self.value = value
-        
-        if let systemImage {
-            self.label = AnyView(Label(title, systemImage: systemImage))
-        } else {
-            self.label = AnyView(Text(title))
-        }
-    }
-    
-    public init(title: String, image: String? = nil, bind bindValue: Binding<T>, value: T) {
-        _bindValue = bindValue
-        _isOn = State(wrappedValue: bindValue.wrappedValue == value)
-        self.value = value
-        
-        if let image {
-            self.label = AnyView(Label(title, image: image))
-        } else {
-            self.label = AnyView(Text(title))
-        }
-    }
-    
-    public init(bind bindValue: Binding<T>, value: T, @ViewBuilder label: () -> some View) {
-        _bindValue = bindValue
-        _isOn = State(wrappedValue: bindValue.wrappedValue == value)
-        self.value = value
-        self.label = AnyView(label())
-    }
-    
-    public var body: some View {
-        Toggle(isOn: $isOn) {
-            self.label
-        }
-        .onChange(of: isOn) { newValue in
-            if newValue && value != bindValue {
-                bindValue = value
-            } else {
-                isOn = value == bindValue
-            }
-        }
-        .onChange(of: bindValue) { newValue in
-            isOn = newValue == value
-        }
-    }
-}
-
-public protocol ToggleMenuContent: Equatable, CaseIterable {
-    var label: String { get }
-    var image: String? { get }
-    var systemImage: String? { get }
+public protocol ToggleMenuContent: DisplayLabelProtocol {
+    var shortKey: KeyEquivalent? { get }
 }
 
 public extension ToggleMenuContent {
-    var image: String? { nil }
-    var systemImage: String? { nil }
+    var shortKey: KeyEquivalent? { nil }
 }
 
 public struct ToggleMenuSection<C>: View where C: ToggleMenuContent {
     @Binding private var value: C
     private let sectionHeader: String?
     private let contents: [C]
+    private let eventModifiers: EventModifiers
     
-    public init(_ sectionHeader: String? = nil, value: Binding<C>) {
+    public init(_ sectionHeader: String? = nil, value: Binding<C>, eventModifiers: EventModifiers = []) {
         _value = value
         self.sectionHeader = sectionHeader
+        self.eventModifiers = eventModifiers
         self.contents = Array(C.allCases)
     }
     
@@ -177,18 +111,34 @@ public struct ToggleMenuSection<C>: View where C: ToggleMenuContent {
             ForEach(0..<contents.count, id: \.self) { ind in
                 let content = contents[ind]
                 
-                if let image = content.image {
-                    ToggleMenuItem(title: content.label, image: image, bind: $value, value: content)
-                } else if let systemImage = content.systemImage {
-                    ToggleMenuItem(title: content.label, systemImage: systemImage, bind: $value, value: content)
+                if let shortKey = content.shortKey {
+                    makeMenuItem(content)
+                        .keyboardShortcut(shortKey, modifiers: eventModifiers)
                 } else {
-                    ToggleMenuItem(title: content.label, systemImage: nil, bind: $value, value: content)
+                    makeMenuItem(content)
                 }
             }
         } header: {
             if let sectionHeader {
                 Text(sectionHeader)
             }
+        }
+    }
+}
+
+private extension ToggleMenuSection {
+    @ViewBuilder
+    func makeMenuItem(_ content: C) -> some View {
+        if content == value {
+            Toggle(isOn: .constant(true), label: {
+                content.makeDisplayLabel()
+            })
+        } else {
+            Button(action: {
+                value = content
+            }, label: {
+                content.makeDisplayLabel()
+            })
         }
     }
 }
@@ -215,6 +165,8 @@ struct TestToggleMenuSection: View {
         var systemImage: String? {
             rawValue
         }
+        
+        var id: String { rawValue }
     }
     
     enum Weather: String, ToggleMenuContent, CaseIterable {
@@ -235,6 +187,8 @@ struct TestToggleMenuSection: View {
         var systemImage: String? {
             rawValue
         }
+        
+        var id: String { rawValue }
     }
     
     @State var animal: Animal = .hare
@@ -245,17 +199,6 @@ struct TestToggleMenuSection: View {
         VStack {
             Menu("Test Menu") {
                 ToggleMenuSection("Chooice Animal", value: $animal)
-                
-                Divider()
-                
-                Section {
-                    let weathers = Weather.allCases
-                    ForEach(0..<weathers.count, id: \.self) { ind in
-                        ToggleMenuItem(title: weathers[ind].label, systemImage: weathers[ind].systemImage, bind: $weather, value: weathers[ind])
-                    }
-                } header: {
-                    Text("Chooice Weather")
-                }
                 
                 Divider()
                 

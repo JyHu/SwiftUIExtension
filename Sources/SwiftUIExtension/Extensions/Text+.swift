@@ -40,3 +40,13 @@ public extension Text {
         self.init(NSNumber(value: number), formatter: formatter)
     }
 }
+
+public extension Text {
+    func adp_foregroundStyle(_ style: Color) -> Text {
+        if #available(macOS 14.0, iOS 17.0, *) {
+            self.foregroundStyle(style)
+        } else {
+            self.foregroundColor(style)
+        }
+    }
+}
