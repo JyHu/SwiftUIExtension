@@ -134,6 +134,12 @@ public extension View {
             view.background(style, in: shape, fillStyle: fillStyle)
         }
     }
+    
+    func background<V>(if condition: Bool, alignment: Alignment = .center, @ViewBuilder content: () -> V) -> some View where V : View {
+        self.if(condition) { view in
+            view.background(alignment: alignment, content: content)
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

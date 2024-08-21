@@ -26,7 +26,7 @@ public struct AppStoragePublished<T>: DynamicProperty {
     }
 }
 
-public extension AppStoragePublished {
+extension AppStoragePublished {
     public init(wrappedValue: T, _ key: String) where T == Bool {
         self._storageValue = AppStorage(wrappedValue: wrappedValue, key)
         self.publisher.send(wrappedValue)
