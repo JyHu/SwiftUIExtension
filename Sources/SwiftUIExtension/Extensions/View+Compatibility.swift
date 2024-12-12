@@ -64,3 +64,16 @@ public extension View {
         #endif
     }
 }
+
+public extension View {
+    /// 适配高版本中的按键事件
+    /// action 返回 true 表示已经处理了按键事件；返回 false 表示未处理，需要由系统处理
+    func adp_onKeyPress(_ key: KeyEquivalent, action: @escaping () -> Bool) -> some View {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
+            return self.onKeyPress(key) {
+                action() ? .handled : .ignored
+            }
+        }
+        return self
+    }
+}

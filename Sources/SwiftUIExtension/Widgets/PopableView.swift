@@ -8,43 +8,57 @@
 import SwiftUI
 
 /// 带有自定义返回按钮的视图
-struct BackableView<T>: View where T: View {
+public struct BackableView: View {
     #if os(iOS)
     @Environment(\.presentationMode) var presentationMode
     #endif
     
-    let contentMaker: () -> T
+    private let contentView: AnyView
     
-    var body: some View {
-        contentMaker()
+    public init(@ViewBuilder contentMaker: () -> some View) {
+        self.contentView = AnyView(contentMaker())
+    }
+    
+    public var body: some View {
         #if os(iOS)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        presentationMode.wrappedValue.dismiss()
-                    } label: {
-                        Label("Back", systemImage: "chevron.left")
+        SizeClassView { isCompact in
+            if isCompact {
+                contentView
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button {
+                                presentationMode.wrappedValue.dismiss()
+                            } label: {
+                                Label("Back", systemImage: "chevron.left")
+                            }
+                        }
                     }
-                }
+            } else {
+                contentView
             }
+        }
+        #else
+        VStack {
+            Text("hello")
+        }
         #endif
     }
 }
 
 /// 根据平台来确定是自定义返回按钮还是直接跳转到的新页面
-struct PlatformPopableView<T>: View where T: View {
-    @Environment(\.presentationMode) var presentationMode
-    
-    let contentMaker: () -> T
-    
-    var body: some View {
-        if Platform.current == .iphone {
-            contentMaker()
-        } else {
-            BackableView(contentMaker: contentMaker)
-        }
-    }
-}
+//struct PlatformPopableView<T>: View where T: View {
+//    @Environment(\.presentationMode) var presentationMode
+//    
+//    let contentMaker: () -> T
+//    
+//    var body: some View {
+//        if Platform.current == .iphone {
+//            contentMaker()
+//        } else {
+//            BackableView(contentMaker: contentMaker)
+//        }
+//    }
+//}
 //
 //public struct PresentedView<C, T>: View where C: View, T: View {
 //    /// 弹出方式
