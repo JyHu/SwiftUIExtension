@@ -9,7 +9,7 @@ import SwiftUI
 
 /// 用于存入AppStorage
 /// https://medium.com/geekculture/using-appstorage-with-swiftui-colors-and-some-nskeyedarchiver-magic-a38038383c5e
-extension Color: RawRepresentable {
+extension Color: @retroactive RawRepresentable {
     public init?(rawValue: String) {
         do {
             if let data = Data(base64Encoded: rawValue),

@@ -41,10 +41,38 @@ public struct SidebarToggle: View {
     }
 }
 
+#if DEBUG
 struct SidebarToggle_Previews: PreviewProvider {
+    private struct SidebarTogglePreview: View {
+        var body: some View {
+            HSplitView {
+                List {
+                    ForEach(0..<100, id: \.self) { ind in
+                        Text("\(ind)")
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .listStyle(.sidebar)
+                
+                List {
+                    ForEach(0..<100, id: \.self) { ind in
+                        Text("\(ind)")
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigation) {
+                    SidebarToggle()
+                }
+            }
+        }
+    }
+    
     static var previews: some View {
-        SidebarToggle()
+        SidebarTogglePreview()
     }
 }
+#endif
 
 #endif

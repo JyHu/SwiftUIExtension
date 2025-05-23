@@ -60,12 +60,19 @@ public struct OffsetScrollView<Content: View>: View {
     
     public var body: some View {
         ScrollView(axes, showsIndicators: showsIndicators) {
-            /// 添加一个透明视图，用于监听滚动偏移量
-            GeometryReader { proxy in
-                Color.clear.preference(key: ScrollViewOffsetPreferenceKey.self, value: proxy.frame(in: .named(layerID)).origin)
+            VStack {
+                /// 添加一个透明视图，用于监听滚动偏移量
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(key: ScrollViewOffsetPreferenceKey.self, value: proxy.frame(in: .named(layerID)).origin)
+                }
+                .frame(height: 0)
+                
+                /// 添加显示视图
+                contentBuilder()
+                
+                Spacer()
             }
-            /// 添加显示视图
-            contentBuilder()
         }
         /// 设置坐标系id
         .coordinateSpace(name: layerID)
@@ -79,3 +86,34 @@ public struct OffsetScrollView<Content: View>: View {
         }
     }
 }
+
+#if DEBUG
+struct OffsetScrollView_Previews: PreviewProvider {
+    static var previews: some View {
+        OffsetScrollViewPreview()
+            .previewDisplayName("OffsetScrollView 示例")
+    }
+
+    private struct OffsetScrollViewPreview: View {
+        @State private var offset: CGPoint = .zero
+
+        var body: some View {
+            VStack {
+                Text("Offset: \(offset.x), \(offset.y)")
+                
+                OffsetScrollView(offset: $offset) {
+                    VStack {
+                        ForEach(0..<100) { i in
+                            Text("Item \(i)")
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(Color.purple.opacity(0.2))
+                }
+            }
+            .padding()
+            .background(Color.red.opacity(0.1))
+        }
+    }
+}
+#endif

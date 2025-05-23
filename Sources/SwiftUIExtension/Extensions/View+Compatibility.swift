@@ -77,3 +77,32 @@ public extension View {
         return self
     }
 }
+
+public extension View {
+    @ViewBuilder
+    func adp_overlay<V>(alignment: Alignment = .center, @ViewBuilder content: () -> V) -> some View where V : View {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            self.overlay(alignment: alignment, content: content)
+        } else {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    func adp_overlay<S>(_ style: S, ignoresSafeAreaEdges edges: Edge.Set = .all) -> some View where S : ShapeStyle {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            self.overlay(style, ignoresSafeAreaEdges: edges)
+        } else {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    func adp_overlay<S, T>(_ style: S, in shape: T, fillStyle: FillStyle = FillStyle()) -> some View where S : ShapeStyle, T : Shape {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            self.overlay(style, in: shape, fillStyle: fillStyle)
+        } else {
+            self
+        }
+    }
+}

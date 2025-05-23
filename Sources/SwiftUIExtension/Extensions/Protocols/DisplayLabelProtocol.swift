@@ -22,9 +22,15 @@ public extension DisplayLabelProtocol {
     @ViewBuilder
     func makeDisplayLabel() -> some View {
         if let image {
-            Label(label, image: image)
+            HStack {
+                Image(image)
+                Text(label)
+            }
         } else if let systemImage {
-            Label(label, systemImage: systemImage)
+            HStack {
+                Image(systemName: systemImage)
+                Text(label)
+            }
         } else {
             Text(label)
         }

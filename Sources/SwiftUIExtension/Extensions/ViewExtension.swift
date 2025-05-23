@@ -8,8 +8,16 @@
 import SwiftUI
 
 public extension View {
-    var randomBackground: some View {
-        background(Color.random)
+    @ViewBuilder
+    func disableAutoAdjustment() -> some View {
+        #if !os(macOS)
+        self
+            .disableAutocorrection(true)
+            .autocapitalization(.none)
+            .keyboardType(.asciiCapable)
+        #else
+        self
+        #endif
     }
     
     func makeCapsuleBackground(_ color: Color = .red) -> some View {
@@ -38,6 +46,19 @@ public extension View {
     func addBorder<S>(_ content: S, width: Double = 1, cornerRadius: CGFloat) -> some View where S: ShapeStyle {
         return overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(content, lineWidth: width))
     }
+    
+#if !os(macOS)
+    @ViewBuilder
+    func hideTabBar() -> some View {
+        if #available(iOS 18.0, *) {
+            self.toolbarVisibility(.hidden, for: .tabBar)
+        } else if #available(iOS 16.0, *) {
+            self.toolbar(.hidden, for: .tabBar)
+        } else {
+            self
+        }
+    }
+#endif
 }
 
 public extension View {
