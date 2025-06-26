@@ -22,7 +22,7 @@ import SwiftUI
 ///
 ///
 
-public enum APPAppearance: String, CaseIterable, Identifiable, SelfCompatible {
+public enum APPAppearance: String, CaseIterable, Identifiable {
     case auto
     case light
     case dark
@@ -201,13 +201,7 @@ struct AppearanceView_Previews: PreviewProvider {
                                 Text(appearance.systemImage)
                                 
                                 RoundedRectangle(cornerRadius: 5)
-                                    .fill(appearance.makeValue {
-                                        switch $0 {
-                                        case .auto: return Color.yellow
-                                        case .light: return Color.white
-                                        case .dark: return Color.black
-                                        }
-                                    })
+                                    .fill(appearance._color())
                                     .frame(width: 30, height: 20)
                             }
                         }
@@ -224,4 +218,15 @@ struct AppearanceView_Previews: PreviewProvider {
             .applyAppAppearance()
     }
 }
+
+private extension APPAppearance {
+    func _color() -> Color {
+        switch self {
+        case .auto: return Color.yellow
+        case .light: return Color.white
+        case .dark: return Color.black
+        }
+    }
+}
+
 #endif

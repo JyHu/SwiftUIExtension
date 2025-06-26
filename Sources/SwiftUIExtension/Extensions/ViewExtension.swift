@@ -62,9 +62,14 @@ public extension View {
 }
 
 public extension View {
-    /// 调整支持多行展示
-    func multilinesStyle() -> some View {
-        self.lineLimit(nil)
-            .fixedSize(horizontal: false, vertical: true)
+    @ViewBuilder
+    func multilinesTextStyle(_ multilines: Bool = true, textAlignment: TextAlignment = .leading) -> some View {
+        if multilines {
+            self.lineLimit(nil)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+        } else {
+            self
+        }
     }
 }
