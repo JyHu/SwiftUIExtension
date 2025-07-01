@@ -63,9 +63,9 @@ public extension View {
 
 public extension View {
     @ViewBuilder
-    func multilinesTextStyle(_ multilines: Bool = true, textAlignment: TextAlignment = .leading) -> some View {
+    func multilinesTextStyle(_ multilines: Bool = true, lineLimit: Int? = nil, textAlignment: TextAlignment = .leading) -> some View {
         if multilines {
-            self.lineLimit(nil)
+            self.lineLimit(lineLimit)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
         } else {
