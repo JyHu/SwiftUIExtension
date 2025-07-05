@@ -48,7 +48,60 @@ public extension Color {
             B: Int(hexValue & 0xFF)
         )
     }
+}
+
+#if canImport(AppKit)
+
+import AppKit
+
+public extension Color {
+    func getRGB() -> (R: Int, G: Int, B: Int, A: Double)? {
+        guard let (red, green, blue, alpha) = getRgba() else {
+            return nil
+        }
+        
+        return (
+            R: Int(red * 255),
+            G: Int(green * 255),
+            B: Int(blue * 255),
+            A: alpha
+        )
+    }
     
+    func getRgba() -> (r: Double, g: Double, b: Double, a: Double)? {
+        let nsColor = NSColor(self)
+        
+        guard let rgbColor = nsColor.usingColorSpace(.sRGB) else { return nil }
+
+        return (
+            r: Double(rgbColor.redComponent),
+            g: Double(rgbColor.greenComponent),
+            b: Double(rgbColor.blueComponent),
+            a: Double(rgbColor.alphaComponent)
+        )
+    }
+    
+    var reversed: Color? {
+        guard let (r, g, b, _) = getRGB() else { return nil }
+        return Color(R: 255 - r, G: 255 - g, B: 255 - b)
+    }
+    
+    var hexValue: UInt? {
+        guard let (r, g, b, _) = getRGB() else { return nil }
+        return ((UInt(r) << 8) + UInt(g)) << 8 + UInt(b)
+    }
+    
+    func toHex() -> String? {
+        guard let (r, g, b, _) = getRGB() else { return nil }
+        return String(format: "#%02X%02X%02X", r, g, b)
+    }
+}
+
+#elseif canImport(UIKit)
+
+import UIKit
+
+public extension Color {
     func getRGB() -> (R: Int, G: Int, B: Int, A: Double) {
         let (red, green, blue, alpha) = getRgba()
         
@@ -88,6 +141,8 @@ public extension Color {
         return String(format: "#%02X%02X%02X", r, g, b)
     }
 }
+
+#endif
 
 public extension Color {
     /// 将颜色与白色混合，使颜色变淡（不改变 alpha）

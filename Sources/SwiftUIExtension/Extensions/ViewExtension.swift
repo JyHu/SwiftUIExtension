@@ -34,15 +34,6 @@ public extension View {
         return AnyView(self)
     }
     
-    /// 给视图添加一个边框
-    ///
-    /// Text("Hello World").addBorder(Color.blue, width: 3, cornerRadius: 5)
-    ///
-    /// - Parameters:
-    ///   - content: <#content description#>
-    ///   - width: <#width description#>
-    ///   - cornerRadius: <#cornerRadius description#>
-    /// - Returns: <#description#>
     func addBorder<S>(_ content: S, width: Double = 1, cornerRadius: CGFloat) -> some View where S: ShapeStyle {
         return overlay(RoundedRectangle(cornerRadius: cornerRadius).strokeBorder(content, lineWidth: width))
     }
@@ -62,6 +53,19 @@ public extension View {
 }
 
 public extension View {
+    
+    /// Applies multiline text formatting to the view conditionally.
+    ///
+    /// This modifier is useful for customizing how text behaves when it spans multiple lines,
+    /// including line limit, alignment, and sizing behavior.
+    ///
+    /// - Parameters:
+    ///   - multilines: A Boolean value that determines whether the view should be styled for multiline text.
+    ///     If `false`, no formatting is applied and the original view is returned.
+    ///   - lineLimit: The maximum number of lines to display. If set to `0`, it is treated as unlimited (`nil`).
+    ///   - textAlignment: The alignment of the text when multiline is enabled. Defaults to `.leading`.
+    ///
+    /// - Returns: A view modified with multiline styling if `multilines` is `true`; otherwise, the original view.
     @ViewBuilder
     func multilinesTextStyle(_ multilines: Bool = true, lineLimit: Int? = nil, textAlignment: TextAlignment = .leading) -> some View {
         if multilines {
