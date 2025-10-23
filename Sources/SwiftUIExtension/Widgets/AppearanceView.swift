@@ -138,6 +138,7 @@ public struct AppearanceView<T>: View where T: PickerStyle {
 }
 
 #if DEBUG
+@available(iOS 17.0, macOS 14.0, *)
 struct AppearanceView_Previews: PreviewProvider {
     private struct AppearanceGroup<T>: View where T: View {
         let title: LocalizedStringKey
@@ -169,7 +170,9 @@ struct AppearanceView_Previews: PreviewProvider {
                         if #available(macOS 14.0, *) {
                             AppearanceView(itemStyle: .symbolOnly, pickerStyle: .palette)
                         }
+#if os(macOS)
                         AppearanceView(itemStyle: .symbolOnly, pickerStyle: .radioGroup)
+#endif
                         AppearanceView(itemStyle: .symbolOnly, pickerStyle: .segmented)
                     }
                     
@@ -179,7 +182,9 @@ struct AppearanceView_Previews: PreviewProvider {
                         if #available(macOS 14.0, *) {
                             AppearanceView(itemStyle: .textOnly, pickerStyle: .palette)
                         }
+#if os(macOS)
                         AppearanceView(itemStyle: .textOnly, pickerStyle: .radioGroup)
+#endif
                         AppearanceView(itemStyle: .textOnly, pickerStyle: .segmented)
                     }
                     
@@ -189,10 +194,13 @@ struct AppearanceView_Previews: PreviewProvider {
                         if #available(macOS 14.0, *) {
                             AppearanceView(label: "palette", itemStyle: .textAndSymbol, pickerStyle: .palette)
                         }
+#if os(macOS)
                         AppearanceView(label: "radioGroup", itemStyle: .textAndSymbol, pickerStyle: .radioGroup)
+#endif
                         AppearanceView(label: "segmented", itemStyle: .textAndSymbol, pickerStyle: .segmented)
                     }
                     
+#if os(macOS)
                     AppearanceGroup(title: "Custom") {
                         AppearanceView(pickerStyle: .radioGroup) { appearance in
                             HStack {
@@ -206,6 +214,7 @@ struct AppearanceView_Previews: PreviewProvider {
                             }
                         }
                     }
+#endif
                 }
                 .padding()
             }

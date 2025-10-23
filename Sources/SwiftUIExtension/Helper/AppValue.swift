@@ -160,6 +160,12 @@ public extension AppValue {
     init<K: AppValueKey>(_ key: K) where K.Value == V, K.Value: RawRepresentable, K.Value.RawValue == Int {
         self._value = AppStorage(wrappedValue: key.default, key.key)
     }
+    
+    // MARK: - 其他类型支持
+    
+//    init<K: AppValueKey>(_ key: K) where K.Value == V, K.Value == Color {
+//        self._value = AppStorage(wrappedValue: key.default, key.key)
+//    }
 }
 
 public extension AppValue {
@@ -198,4 +204,8 @@ public extension AppValue {
     init(_ key: String, value: V) where V: RawRepresentable, V.RawValue == Int {
         self._value = AppStorage(wrappedValue: value, key)
     }
+    
+    // MARK: - 其他类型支持
+    
+    
 }

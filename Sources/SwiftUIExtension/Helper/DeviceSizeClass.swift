@@ -19,31 +19,28 @@ public extension UserInterfaceSizeClass {
     }
 }
 
-public func isCompact(hori horizontalSizeClass: UserInterfaceSizeClass?, vert verticalSizeClass: UserInterfaceSizeClass?) -> Bool {
-    /// iphone 默认都当作小屏处理，不管横屏状态
-    if Platform.current == .iphone {
-        return true
-    }
+/// 判断当前布局是否应为 Compact
+public func isCompactLayout(horizontal: UserInterfaceSizeClass?, vertical: UserInterfaceSizeClass?) -> Bool {    
+    /// iPhone
+    /// 竖屏 isCompactLayout: horizontal = Com, vertical = Reg
+    /// 横屏 isCompactLayout: horizontal = Com, vertical = Com
     
-    return (Platform.current == .iphone && verticalSizeClass == .regular) ||
-        (Platform.current == .ipad && horizontalSizeClass == .compact)
+    return vertical == .compact || horizontal == nil
 }
 
 
-public struct SizeClassView: View {
+public struct SizeClassView<Content: View>: View {
     @Environment(\.verticalSizeClass) var verticalSizeClass
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
-    private let viewMaker: (_ isCompact: Bool) -> AnyView
+    @ViewBuilder private var viewMaker: (_ isCompact: Bool) -> Content
     
-    public init(@ViewBuilder viewMaker: @escaping (_ isCompact: Bool) -> some View) {
-        self.viewMaker = { isComact in
-            viewMaker(isComact).eraseToAnyView()
-        }
+    public init(@ViewBuilder viewMaker: @escaping (_ isCompact: Bool) -> Content) {
+        self.viewMaker = viewMaker
     }
     
     public var body: some View {
-        viewMaker(isCompact(hori: horizontalSizeClass, vert: verticalSizeClass))
+        viewMaker(isCompactLayout(horizontal: horizontalSizeClass, vertical: verticalSizeClass))
     }
 }
 
