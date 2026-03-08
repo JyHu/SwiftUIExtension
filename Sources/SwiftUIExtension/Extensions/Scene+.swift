@@ -8,6 +8,7 @@
 import SwiftUI
 
 public extension Scene {
+#if os(macOS)
     func disableRestorationBehavior() -> some Scene {
         if #available(macOS 15.0, *) {
             return self.restorationBehavior(.disabled)
@@ -15,4 +16,5 @@ public extension Scene {
             return self
         }
     }
+#endif
 }
