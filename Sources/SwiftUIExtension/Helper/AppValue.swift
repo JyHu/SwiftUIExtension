@@ -36,13 +36,14 @@ public protocol AppValueKey {
     associatedtype Value
     var key: String { get }
     var `default`: Value { get }
+    func update(_ value: Value?)
 }
 
 public struct DefaultAppValue<T>: AppValueKey {
     public typealias Value = T
     public let key: String
     public let `default`: T
-    
+
     public init(key: String, default: T) {
         self.key = key
         self.default = `default`
@@ -54,10 +55,19 @@ public extension AppValueKey {
     func storedValue() -> Value? {
         UserDefaults.standard.object(forKey: key) as? Value
     }
-    
+
     /// 获取用户设置的值，如不存在则返回默认值
     func resolvedValue() -> Value {
         storedValue() ?? self.default
+    }
+    
+    func update(_ value: Value?) {
+        if let value = value {
+            UserDefaults.standard.set(value, forKey: key)
+            UserDefaults.standard.synchronize()
+        } else {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
     }
 }
 
@@ -75,6 +85,53 @@ public extension AppValueKey where Value: RawRepresentable {
     }
 }
 
+// MARK: - AppStorageConvertible
+
+/// 标记类型可被 `@AppStorage` 直接存储，用于收敛 `AppValue` 的重复 init。
+///
+/// 如需扩展支持的基础类型，只需添加新的 conformance 即可。
+public protocol AppStorageConvertible {
+    static func appStorage(wrappedValue: Self, key: String) -> AppStorage<Self>
+}
+
+extension String: AppStorageConvertible {
+    public static func appStorage(wrappedValue: Self, key: String) -> AppStorage<Self> {
+        AppStorage(wrappedValue: wrappedValue, key)
+    }
+}
+
+extension Bool: AppStorageConvertible {
+    public static func appStorage(wrappedValue: Self, key: String) -> AppStorage<Self> {
+        AppStorage(wrappedValue: wrappedValue, key)
+    }
+}
+
+extension Int: AppStorageConvertible {
+    public static func appStorage(wrappedValue: Self, key: String) -> AppStorage<Self> {
+        AppStorage(wrappedValue: wrappedValue, key)
+    }
+}
+
+extension Double: AppStorageConvertible {
+    public static func appStorage(wrappedValue: Self, key: String) -> AppStorage<Self> {
+        AppStorage(wrappedValue: wrappedValue, key)
+    }
+}
+
+extension Data: AppStorageConvertible {
+    public static func appStorage(wrappedValue: Self, key: String) -> AppStorage<Self> {
+        AppStorage(wrappedValue: wrappedValue, key)
+    }
+}
+
+extension URL: AppStorageConvertible {
+    public static func appStorage(wrappedValue: Self, key: String) -> AppStorage<Self> {
+        AppStorage(wrappedValue: wrappedValue, key)
+    }
+}
+
+// MARK: - AppValue
+
 /// `AppValue` 是一个用于简化 `@AppStorage` 使用的属性包装器。
 ///
 /// 它通过传入实现了 `AppValueKey` 的结构体来统一声明方式，
@@ -88,6 +145,8 @@ public extension AppValueKey where Value: RawRepresentable {
 /// - `Data`
 /// - `URL`
 /// - 枚举（RawValue 为 String 或 Int）
+/// - `Array`（Element 需遵循 Codable，以 JSON 字符串存储）
+/// - `Dictionary`（Key 和 Value 需遵循 Codable，以 JSON 字符串存储）
 ///
 /// ✅ 使用方式：
 /// ```swift
@@ -95,6 +154,8 @@ public extension AppValueKey where Value: RawRepresentable {
 ///     @AppValue(SIDs.showSidebar) private var showSidebar: Bool
 ///     @AppValue(SIDs.username) private var username: String
 ///     @AppValue(SIDs.launchMode) private var mode: LaunchMode
+///     @AppValue(SIDs.tags) private var tags: [String]
+///     @AppValue(SIDs.settings) private var settings: [String: Int]
 ///
 ///     var body: some View {
 ///         VStack {
@@ -124,88 +185,78 @@ public struct AppValue<V>: DynamicProperty {
     }
 }
 
+// MARK: - init with AppValueKey
+
 public extension AppValue {
-    init<K: AppValueKey>(_ key: K) where K.Value == String, K.Value == V {
+
+    /// 基础类型（String, Bool, Int, Double, Data, URL）
+    init<K: AppValueKey>(_ key: K) where K.Value == V, V: AppStorageConvertible {
+        self._value = V.appStorage(wrappedValue: key.default, key: key.key)
+    }
+
+    /// 枚举支持（RawValue 为 String）
+    init<K: AppValueKey>(_ key: K) where K.Value == V, V: RawRepresentable, V.RawValue == String {
         self._value = AppStorage(wrappedValue: key.default, key.key)
     }
 
-    init<K: AppValueKey>(_ key: K) where K.Value == Bool, K.Value == V {
+    /// 枚举支持（RawValue 为 Int）
+    init<K: AppValueKey>(_ key: K) where K.Value == V, V: RawRepresentable, V.RawValue == Int {
         self._value = AppStorage(wrappedValue: key.default, key.key)
     }
-
-    init<K: AppValueKey>(_ key: K) where K.Value == Int, K.Value == V {
-        self._value = AppStorage(wrappedValue: key.default, key.key)
-    }
-
-    init<K: AppValueKey>(_ key: K) where K.Value == Double, K.Value == V {
-        self._value = AppStorage(wrappedValue: key.default, key.key)
-    }
-
-    init<K: AppValueKey>(_ key: K) where K.Value == Data, K.Value == V {
-        self._value = AppStorage(wrappedValue: key.default, key.key)
-    }
-
-    init<K: AppValueKey>(_ key: K) where K.Value == URL, K.Value == V {
-        self._value = AppStorage(wrappedValue: key.default, key.key)
-    }
-
-    // MARK: - 枚举支持（RawRepresentable: String）
-
-    init<K: AppValueKey>(_ key: K) where K.Value == V, K.Value: RawRepresentable, K.Value.RawValue == String {
-        self._value = AppStorage(wrappedValue: key.default, key.key)
-    }
-
-    // MARK: - 枚举支持（RawRepresentable: Int）
-
-    init<K: AppValueKey>(_ key: K) where K.Value == V, K.Value: RawRepresentable, K.Value.RawValue == Int {
-        self._value = AppStorage(wrappedValue: key.default, key.key)
-    }
-    
-    // MARK: - 其他类型支持
-    
-//    init<K: AppValueKey>(_ key: K) where K.Value == V, K.Value == Color {
-//        self._value = AppStorage(wrappedValue: key.default, key.key)
-//    }
 }
 
+// MARK: - init with String key
+
 public extension AppValue {
-    init(_ key: String, value: V) where V == String {
-        self._value = AppStorage(wrappedValue: value, key)
+
+    /// 基础类型（String, Bool, Int, Double, Data, URL）
+    init(_ key: String, value: V) where V: AppStorageConvertible {
+        self._value = V.appStorage(wrappedValue: value, key: key)
     }
 
-    init(_ key: String, value: V) where V == Bool {
-        self._value = AppStorage(wrappedValue: value, key)
-    }
-
-    init(_ key: String, value: V) where V == Int {
-        self._value = AppStorage(wrappedValue: value, key)
-    }
-
-    init(_ key: String, value: V) where V == Double {
-        self._value = AppStorage(wrappedValue: value, key)
-    }
-
-    init(_ key: String, value: V) where V == Data {
-        self._value = AppStorage(wrappedValue: value, key)
-    }
-
-    init(_ key: String, value: V) where V == URL {
-        self._value = AppStorage(wrappedValue: value, key)
-    }
-
-    // MARK: - 枚举支持（RawRepresentable: String）
-
+    /// 枚举支持（RawValue 为 String）
     init(_ key: String, value: V) where V: RawRepresentable, V.RawValue == String {
         self._value = AppStorage(wrappedValue: value, key)
     }
 
-    // MARK: - 枚举支持（RawRepresentable: Int）
-
+    /// 枚举支持（RawValue 为 Int）
     init(_ key: String, value: V) where V: RawRepresentable, V.RawValue == Int {
         self._value = AppStorage(wrappedValue: value, key)
     }
-    
-    // MARK: - 其他类型支持
-    
-    
+}
+
+// MARK: - Array + RawRepresentable (Codable JSON 存储)
+
+extension Array: @retroactive RawRepresentable where Element: Codable {
+    public init?(rawValue: String) {
+        guard let data = rawValue.data(using: .utf8),
+              let result = try? JSONDecoder().decode([Element].self, from: data)
+        else { return nil }
+        self = result
+    }
+
+    public var rawValue: String {
+        guard let data = try? JSONEncoder().encode(self),
+              let result = String(data: data, encoding: .utf8)
+        else { return "[]" }
+        return result
+    }
+}
+
+// MARK: - Dictionary + RawRepresentable (Codable JSON 存储)
+
+extension Dictionary: @retroactive RawRepresentable where Key: Codable, Value: Codable {
+    public init?(rawValue: String) {
+        guard let data = rawValue.data(using: .utf8),
+              let result = try? JSONDecoder().decode([Key: Value].self, from: data)
+        else { return nil }
+        self = result
+    }
+
+    public var rawValue: String {
+        guard let data = try? JSONEncoder().encode(self),
+              let result = String(data: data, encoding: .utf8)
+        else { return "{}" }
+        return result
+    }
 }
