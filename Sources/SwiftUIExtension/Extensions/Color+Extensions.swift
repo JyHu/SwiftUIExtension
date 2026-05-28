@@ -32,20 +32,21 @@ public extension Color {
         )
     }
     
-    init?(_ colorSpace: Color.RGBColorSpace = .sRGB, hexString: String) {
+    init?(_ colorSpace: Color.RGBColorSpace = .sRGB, hexString: String, alpha: Double = 1) {
         var val: UInt64 = 0
         
         guard Scanner(string: hexString).scanHexInt64(&val) else { return nil }
         
-        self.init(colorSpace, hexValue: val)
+        self.init(colorSpace, hexValue: val, alpha: alpha)
     }
     
-    init(_ colorSpace: Color.RGBColorSpace = .sRGB, hexValue: UInt64) {
+    init(_ colorSpace: Color.RGBColorSpace = .sRGB, hexValue: UInt64, alpha: Double = 1) {
         self.init(
             colorSpace,
             R: Int(hexValue >> 16),
             G: Int((hexValue >> 8) & 0xFF),
-            B: Int(hexValue & 0xFF)
+            B: Int(hexValue & 0xFF),
+            A: alpha
         )
     }
 }

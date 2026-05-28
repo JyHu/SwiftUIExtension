@@ -41,7 +41,7 @@ public extension PopupButton where L == Text {
         self.init(label: { Text(label) }, content: content)
     }
     
-    @available(iOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, *)
     init(label: AttributedString, @ViewBuilder content: @escaping () -> P) {
         self.init(label: { Text(label) }, content: content)
     }
