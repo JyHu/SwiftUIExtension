@@ -15,10 +15,6 @@ public typealias NSUIColor = UIColor
 
 
 public extension Color {
-    var gradient: AngularGradient {
-        return AngularGradient(gradient: Gradient(colors: [self]), center: .center)
-    }
-    
     static var label: Color {
 #if os(macOS)
         Color(.labelColor)

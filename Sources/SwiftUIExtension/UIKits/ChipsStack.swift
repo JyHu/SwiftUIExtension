@@ -1,6 +1,6 @@
 //
 //  SwiftUIView.swift
-//  
+//
 //
 //  Created by Jo on 2024/1/31.
 //
@@ -64,7 +64,7 @@ public struct ChipsStack: Layout {
 
         for view in subviews {
             let size = view.sizeThatFits(.unspecified)
-            
+
             if x + size.width > bounds.maxX {
                 x = bounds.minX
                 y += rowHeight + verticalSpacing
@@ -75,7 +75,7 @@ public struct ChipsStack: Layout {
                 at: CGPoint(x: x, y: y),
                 proposal: ProposedViewSize(size)
             )
-            
+
             x += size.width + horizontalSpacing
             rowHeight = max(rowHeight, size.height)
         }
@@ -88,9 +88,9 @@ struct ChipsStack_Previews: PreviewProvider {
     static var previews: some View {
         ChipsStackPreview()
     }
-    
+
     private static let vals: [String] = (0..<30).map { _ in Array(repeating: "#", count: Int.random(in: 0..<16) + 1).joined() }
-    
+
     private struct ChipsStackPreview: View {
         var body: some View {
             if #available(iOS 16.0, macOS 13.0, *) {
@@ -109,7 +109,7 @@ struct ChipsStack_Previews: PreviewProvider {
             }
         }
     }
-    
+
     private struct DebugView: View {
         let val: String
         var body: some View {
