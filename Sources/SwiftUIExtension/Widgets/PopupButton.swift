@@ -8,12 +8,14 @@
 import SwiftUI
 
 public struct PopupButton<L, P>: View where L: View, P: View {
+    let arrowEdge: Edge?
     @State private var isPresented: Bool = false
     
-    public let label: () -> L
-    public let content: () -> P
+    @ViewBuilder public let label: () -> L
+    @ViewBuilder public let content: () -> P
     
-    public init(@ViewBuilder label: @escaping () -> L, @ViewBuilder content: @escaping () -> P) {
+    public init(arrowEdge: Edge? = nil, @ViewBuilder label: @escaping () -> L, @ViewBuilder content: @escaping () -> P) {
+        self.arrowEdge = arrowEdge
         self.label = label
         self.content = content
     }
@@ -24,10 +26,9 @@ public struct PopupButton<L, P>: View where L: View, P: View {
         } label: {
             label()
         }
-        .buttonStyle(.borderless)
-        .popover(isPresented: $isPresented) {
+        .buttonStyle(.plain)
+        .popover(isPresented: $isPresented, arrowEdge: arrowEdge) {
             content()
-                .padding(.all, 20)
         }
     }
 }
@@ -55,4 +56,16 @@ public extension PopupButton where L == Image {
     init(systemName: String, @ViewBuilder content: @escaping () -> P) {
         self.init(label: { Image(systemName: systemName) }, content: content)
     }
+}
+
+#Preview {
+    VStack {
+        PopupButton(label: "hello") {
+            VStack {
+                Text("hello")
+            }
+            .padding()
+        }
+    }
+    .padding(50)
 }

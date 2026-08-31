@@ -74,7 +74,7 @@ public extension Color {
         if #available(iOS 15.0, *) {
             Color(uiColor: .secondarySystemGroupedBackground)
         } else {
-            Color.systemGroupedBackground
+            Color(.systemGroupedBackground)
         }
 #else
         Color(NSColor.windowBackgroundColor)

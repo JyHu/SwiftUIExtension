@@ -84,7 +84,7 @@ public extension View {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             self.overlay(alignment: alignment, content: content)
         } else {
-            self
+            self.overlay(content(), alignment: alignment)
         }
     }
     
