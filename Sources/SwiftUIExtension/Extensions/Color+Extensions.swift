@@ -185,3 +185,37 @@ public extension Color {
     }
 }
 
+
+@available(iOS 15.0, macOS 12.0, *)
+public extension Color {
+    /// 自适应颜色：浅色 / 深色各一色，跟随当前系统外观
+    init(light: Color, dark: Color) {
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+        self.init(
+            uiColor: UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor(dark)
+                    : UIColor(light)
+            }
+        )
+        #elseif os(macOS)
+        self.init(nsColor:
+                    NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? NSColor(dark) : NSColor(light)
+                    }
+        )
+        #else
+        self = light
+        #endif
+    }
+
+    /// 从 hex 快速构造自适应色
+    init?(lightHex: String, darkHex: String) {
+        guard let light = Color(hexString: lightHex), let dark = Color(hexString: darkHex) else { return nil }
+        self.init(light: light, dark: dark)
+    }
+    
+    init(lightHex: UInt64, darkHex: UInt64) {
+        self.init(light: Color(hexValue: lightHex), dark: Color(hexValue: darkHex))
+    }
+}
