@@ -57,22 +57,3 @@ public struct PromptedEditor: View {
 #endif
     }
 }
-
-#if DEBUG
-struct PromptedEditor_Previews: PreviewProvider {
-    static var previews: some View {
-        PromptedEditorPreview()
-            .previewDisplayName("PromptedEditor Preview")
-    }
-    
-    private struct PromptedEditorPreview: View {
-        @State var text: String = ""
-        var body: some View {
-            if #available(iOS 16.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *) {
-                AccessoryTextEditor(prompt: "请输入内容", text: $text)
-            }
-                
-        }
-    }
-}
-#endif

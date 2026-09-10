@@ -260,3 +260,29 @@ extension Dictionary: @retroactive RawRepresentable where Key: Codable, Value: C
         return result
     }
 }
+
+// MARK: - Optional + RawRepresentable (Codable 类型以 JSON 字符串存储，支持 Date? 等可选类型)
+
+/// 让 `Optional<Wrapped>`（Wrapped: Codable）可以作为 `@AppStorage` 的存储类型。
+///
+/// 背景：`@AppStorage` / `@AppValue` 要求存储类型满足 `RawRepresentable & Codable`，
+/// 且泛型 RawRepresentable 的 AppStorage 特化只接受 `RawValue == String`（见 AppStorage
+/// 的 `init(wrappedValue:key:) where Value.RawValue == String`），因此 `Date?` 这类
+/// 无法直接存储的类型，通过把 Optional 包装成 rawValue 为 JSON 字符串的 RawRepresentable，
+/// 即可被 @AppStorage 识别。nil → 空字符串，非 nil → JSON 编码。
+extension Optional: @retroactive RawRepresentable where Wrapped: Codable {
+    public init?(rawValue: String) {
+        guard !rawValue.isEmpty,
+              let data = rawValue.data(using: .utf8),
+              let value = try? JSONDecoder().decode(Wrapped?.self, from: data)
+        else { return nil }
+        self = value
+    }
+
+    public var rawValue: String {
+        guard let self,
+              let data = try? JSONEncoder().encode(self)
+        else { return "" }
+        return String(data: data, encoding: .utf8) ?? ""
+    }
+}
