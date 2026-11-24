@@ -33,11 +33,13 @@ public extension Color {
     }
     
     init?(_ colorSpace: Color.RGBColorSpace = .sRGB, hexString: String, alpha: Double = 1) {
-        var val: UInt64 = 0
-        
-        guard Scanner(string: hexString).scanHexInt64(&val) else { return nil }
-        
+        guard let val = Self.trimHex(hexString: hexString) else { return nil }
         self.init(colorSpace, hexValue: val, alpha: alpha)
+    }
+    
+    init?(_ colorSpace: Color.RGBColorSpace = .sRGB, hexAString: String) {
+        guard let val = Self.trimHex(hexString: hexAString) else { return nil }
+        self.init(colorSpace, hexValue: val >> 8, alpha: Double(val & 0xFF) / 255.0)
     }
     
     init(_ colorSpace: Color.RGBColorSpace = .sRGB, hexValue: UInt64, alpha: Double = 1) {
@@ -49,6 +51,31 @@ public extension Color {
             A: alpha
         )
     }
+    
+    private static func trimHex(hexString: String) -> UInt64? {
+        let prefixLeng: Int
+        if hexString.hasPrefix("0x") || hexString.hasPrefix("0X") {
+            prefixLeng = 2
+        } else if hexString.hasPrefix("#") {
+            prefixLeng = 1
+        } else {
+            prefixLeng = 0
+        }
+        
+        let trimmedStr: String
+        if prefixLeng == 0 {
+            trimmedStr = hexString
+        } else {
+            trimmedStr = String(hexString.dropFirst(prefixLeng))
+        }
+        
+        guard trimmedStr.range(of: #"^[0-9a-fA-F]+$"#, options: .regularExpression) != nil else { return nil }
+        
+        var hexVal: UInt64 = 0
+        guard Scanner(string: trimmedStr).scanHexInt64(&hexVal) else { return nil }
+        
+        return hexVal
+    }
 }
 
 #if canImport(AppKit)
@@ -56,19 +83,6 @@ public extension Color {
 import AppKit
 
 public extension Color {
-    func getRGB() -> (R: Int, G: Int, B: Int, A: Double)? {
-        guard let (red, green, blue, alpha) = getRgba() else {
-            return nil
-        }
-        
-        return (
-            R: Int(red * 255),
-            G: Int(green * 255),
-            B: Int(blue * 255),
-            A: alpha
-        )
-    }
-    
     func getRgba() -> (r: Double, g: Double, b: Double, a: Double)? {
         let nsColor = NSColor(self)
         
@@ -79,6 +93,44 @@ public extension Color {
             g: Double(rgbColor.greenComponent),
             b: Double(rgbColor.blueComponent),
             a: Double(rgbColor.alphaComponent)
+        )
+    }
+}
+
+#elseif canImport(UIKit)
+
+import UIKit
+
+public extension Color {
+    func getRgba() -> (r: Double, g: Double, b: Double, a: Double)? {
+        let uiColor = NSUIColor(self)
+        
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let cgColor = uiColor.cgColor.converted(to: colorSpace, intent: .defaultIntent, options: nil),
+              let components = cgColor.components, components.count >= 4 else {
+            return nil
+        }
+        
+        return (
+            r: Double(components[0]),
+            g: Double(components[1]),
+            b: Double(components[2]),
+            a: Double(components[3])
+        )
+    }
+}
+
+#endif
+
+public extension Color {
+    func getRGB() -> (R: Int, G: Int, B: Int, A: Double)? {
+        guard let (red, green, blue, alpha) = getRgba() else { return nil }
+        
+        return (
+            R: Int(red * 255),
+            G: Int(green * 255),
+            B: Int(blue * 255),
+            A: alpha
         )
     }
     
@@ -92,58 +144,17 @@ public extension Color {
         return ((UInt(r) << 8) + UInt(g)) << 8 + UInt(b)
     }
     
-    func toHex() -> String? {
+    func toHex(prefix: String = "#") -> String? {
         guard let (r, g, b, _) = getRGB() else { return nil }
-        return String(format: "#%02X%02X%02X", r, g, b)
+        return prefix + String(format: "%02X%02X%02X", r, g, b)
+    }
+    
+    func toHexA(prefix: String = "#") -> String? {
+        guard let (r, g, b, a) = getRGB() else { return nil }
+        let ha = Int(a * 255)
+        return prefix + String(format: "%02X%02X%02X%02x", r, g, b, ha)
     }
 }
-
-#elseif canImport(UIKit)
-
-import UIKit
-
-public extension Color {
-    func getRGB() -> (R: Int, G: Int, B: Int, A: Double) {
-        let (red, green, blue, alpha) = getRgba()
-        
-        return (
-            R: Int(red * 255),
-            G: Int(green * 255),
-            B: Int(blue * 255),
-            A: alpha
-        )
-    }
-    
-    func getRgba() -> (r: Double, g: Double, b: Double, a: Double) {
-        let uiColor = NSUIColor(self)
-        
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        
-        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        
-        return (r: red, g: green, b: blue, a: alpha)
-    }
-    
-    var reversed: Color {
-        let (r, g, b, _) = getRGB()
-        return Color(R: 255 - r, G: 255 - g, B: 255 - b)
-    }
-    
-    var hexValue: UInt {
-        let (r, g, b, _) = getRGB()
-        return ((UInt(r) << 8) + UInt(g)) << 8 + UInt(b)
-    }
-    
-    func toHex() -> String? {
-        let (r, g, b, _) = getRGB()
-        return String(format: "#%02X%02X%02X", r, g, b)
-    }
-}
-
-#endif
 
 public extension Color {
     /// 将颜色与白色混合，使颜色变淡（不改变 alpha）
