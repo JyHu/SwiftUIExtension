@@ -152,7 +152,7 @@ public extension Color {
     func toHexA(prefix: String = "#") -> String? {
         guard let (r, g, b, a) = getRGB() else { return nil }
         let ha = Int(a * 255)
-        return prefix + String(format: "%02X%02X%02X%02x", r, g, b, ha)
+        return prefix + String(format: "%02X%02X%02X%02X", r, g, b, ha)
     }
 }
 
